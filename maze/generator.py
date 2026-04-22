@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from maze.models import ALL_DIRECTIONS, Cell, Direction
 
 
+
 @dataclass
 class MazeData:
     """Generated maze grid and metadata."""

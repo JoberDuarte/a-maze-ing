@@ -6,7 +6,7 @@ from maze.models import ALL_DIRECTIONS, Cell
 def shortest_path_letters(
         grid: list[list[Cell]],
         width: int,
-        height:int,
+        height: int,
         entry: tuple[int, int],
         exit_: tuple[int, int],
 ) -> str:
