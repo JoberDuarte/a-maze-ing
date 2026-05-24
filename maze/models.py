@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+
 class Direction(Enum):
     """Cardinal directions with bit position and coordinate delta."""
 
@@ -17,7 +18,6 @@ class Direction(Enum):
     def bit(self) -> int:
         """Return bit index used in hex wall encoding."""
         return self.value[0]
-    
     @property
     def dx(self) -> int:
         """Return x-axis delta."""
@@ -50,6 +50,7 @@ ALL_DIRECTIONS: tuple[Direction, ...] = (
     Direction.SOUTH,
     Direction.WEST,
 )
+
 
 @dataclass
 class Cell:

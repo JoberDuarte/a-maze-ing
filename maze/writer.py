@@ -18,11 +18,13 @@ def write_maze_file(
 
     lines: list[str] = []
     for row in grid:
-        lines.append("".join(cell.to_hex() for cell in row))
+        row_hex = "".join(cell.to_hex() for cell in row)
+        lines.append(row_hex)
 
     lines.append("")
-    lines.append(f"{entry[0]}, {entry[1]}")
-    lines.append(f"{exit_[0]}, {exit_[1]}")
+    # Coordinates format: no spaces (x,y) to match validators
+    lines.append(f"{entry[0]},{entry[1]}")
+    lines.append(f"{exit_[0]},{exit_[1]}")
     lines.append(path_letters)
 
     content = "\n".join(lines) + "\n"

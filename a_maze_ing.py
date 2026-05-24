@@ -8,7 +8,6 @@ from maze.config import load_config
 from maze.errors import ConfigError
 from maze.generator import MazeGenerator
 from maze.renderer_ascii import interactive_ascii_session
-from maze.renderer_gui import run_gui_session
 from maze.solver import shortest_path_letters
 from maze.writer import write_maze_file
 
@@ -32,7 +31,11 @@ def main() -> int:
         def generator_factory() -> MazeGenerator:
             """Create a generator with changing seed on each regeneration."""
             nonlocal regen_counter
-            effective_seed = config.seed + regen_counter if config.seed is not None else None
+            if config.seed is not None:
+                effective_seed = config.seed + regen_counter
+            else:
+                effective_seed = None
+
             regen_counter += 1
             return MazeGenerator(
                 width=config.width,
@@ -49,7 +52,11 @@ def main() -> int:
             candidate = generator.generate(perfect=config.perfect)
 
             if not candidate.pattern_42_applied:
-                print("Warning: '42' pattern could not be applied (maze too small).")
+                warn_msg = (
+                    "Warning: '42' pattern could not be applied "
+                    "(maze too small)."
+                )
+                print(warn_msg)
 
             try:
                 candidate_path = shortest_path_letters(
@@ -68,9 +75,12 @@ def main() -> int:
         if maze is None:
             if last_error is None:
                 raise RuntimeError("Could not generate a valid maze path.")
-            raise RuntimeError(
-                f"Could not generate a valid maze path after {MAX_BUILD_ATTEMPTS} attempts."
-            ) from last_error
+
+            msg = (
+                f"Could not generate a valid maze path after "
+                f"{MAX_BUILD_ATTEMPTS} attempts."
+            )
+            raise RuntimeError(msg) from last_error
 
         write_maze_file(
             output_file=config.output_file,
@@ -83,25 +93,15 @@ def main() -> int:
         print(f"Maze generated successfully: {config.output_file}")
         print(f"Shortest path length: {len(path_letters)}")
 
-        if config.display == "ASCII":
-            interactive_ascii_session(
-                generator_factory=generator_factory,
-                width=config.width,
-                height=config.height,
-                entry=config.entry,
-                exit_=config.exit,
-                perfect=config.perfect,
-            )
-        elif config.display == "GUI":
-            run_gui_session(
-                generator_factory=generator_factory,
-                width=config.width,
-                height=config.height,
-                entry=config.entry,
-                exit_=config.exit,
-                perfect=config.perfect,
-                output_file=config.output_file,
-            )
+        # Always use ASCII renderer for this simplified build.
+        interactive_ascii_session(
+            generator_factory=generator_factory,
+            width=config.width,
+            height=config.height,
+            entry=config.entry,
+            exit_=config.exit,
+            perfect=config.perfect,
+        )
 
     except ConfigError as exc:
         print(f"Configuration error: {exc}")
@@ -118,3 +118,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+    

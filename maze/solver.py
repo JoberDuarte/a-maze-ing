@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque
 from maze.models import ALL_DIRECTIONS, Cell
 
+
 def shortest_path_letters(
         grid: list[list[Cell]],
         width: int,

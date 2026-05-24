@@ -17,9 +17,10 @@ clean:
 	rm -rf dist build *.egg-info
 
 lint:
-	flake8 .
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	# Run linters only on the project's source files to avoid analyzing site-packages
+	flake8 a_maze_ing.py maze/
+	mypy a_maze_ing.py maze/ --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	flake8 .
-	mypy . --strict
+	flake8 a_maze_ing.py maze/
+	mypy a_maze_ing.py maze/ --strict

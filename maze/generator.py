@@ -5,10 +5,12 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 
-from maze.models import ALL_DIRECTIONS, Cell, Direction
-
-
-
+from maze.models import (
+    ALL_DIRECTIONS,
+    Cell,
+    Direction,
+)
+ 
 @dataclass
 class MazeData:
     """Generated maze grid and metadata."""
@@ -23,7 +25,12 @@ class MazeData:
 class MazeGenerator:
     """Generate mazes with reproducibility support via seed."""
 
-    def __init__(self, width: int, height: int, seed: int | None = None) -> None:
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        seed: int | None = None,
+    ) -> None:
         self.width = width
         self.height = height
         self.seed = seed
@@ -46,7 +53,10 @@ class MazeGenerator:
 
     def _generate_perfect(self) -> MazeData:
         """Generate a perfect maze using iterative DFS backtracker."""
-        grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
+        grid = [
+            [Cell() for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
 
         start_x = self._rng.randrange(self.width)
         start_y = self._rng.randrange(self.height)
@@ -86,7 +96,8 @@ class MazeGenerator:
                 cell.visited = False
 
         if visited_count != total_cells:
-            raise RuntimeError("Maze generation failed: not all cells were visited.")
+            msg = "Maze generation failed: not all cells were visited."
+            raise RuntimeError(msg)
 
         return MazeData(
             width=self.width,
@@ -121,8 +132,14 @@ class MazeGenerator:
         grid[y][x].set_wall(direction, closed=True)
         grid[ny][nx].set_wall(direction.opposite, closed=True)
 
-    def _add_cycles_safely(self, grid: list[list[Cell]], extra_open_ratio: float) -> None:
-        """Open additional walls to create cycles while avoiding 3x3 open areas."""
+    def _add_cycles_safely(
+        self,
+        grid: list[list[Cell]],
+        extra_open_ratio: float,
+    ) -> None:
+        """
+        Open additional walls to create cycles while avoiding 3x3 open areas.
+        """
         candidates: list[tuple[int, int, Direction]] = []
         for y in range(self.height):
             for x in range(self.width):
@@ -152,8 +169,15 @@ class MazeGenerator:
 
             opened += 1
 
-    def _creates_open_3x3(self, grid: list[list[Cell]], cx: int, cy: int) -> bool:
-        """Check local windows for fully open 3x3 areas."""
+    def _creates_open_3x3(
+        self,
+        grid: list[list[Cell]],
+        cx: int,
+        cy: int,
+    ) -> bool:
+        """
+        Check local windows for fully open 3x3 areas.
+        """
         min_wx = max(0, cx - 2)
         max_wx = min(self.width - 3, cx)
         min_wy = max(0, cy - 2)
@@ -166,8 +190,14 @@ class MazeGenerator:
         return False
 
     @staticmethod
-    def _window_is_too_open(grid: list[list[Cell]], wx: int, wy: int) -> bool:
-        """Heuristic: reject 3x3 windows where all internal adjacencies are open."""
+    def _window_is_too_open(
+        grid: list[list[Cell]],
+        wx: int,
+        wy: int,
+    ) -> bool:
+        """
+        Heuristic: reject 3x3 windows where all internal adjacencies are open.
+        """
         # For a 3x3 block there are 12 internal shared edges.
         open_edges = 0
 
@@ -185,9 +215,13 @@ class MazeGenerator:
 
         return open_edges >= 11  # very open/plaza-like region
 
-    def _embed_42_pattern(self, grid: list[list[Cell]]) -> tuple[bool, set[tuple[int, int]]]:
-        """Embed a '42' shape made of fully closed cells if maze is large enough.
-        
+    def _embed_42_pattern(
+        self,
+        grid: list[list[Cell]],
+    ) -> tuple[bool, set[tuple[int, int]]]:
+        """
+        Embed a '42' shape made of fully closed cells if maze is large enough.
+
         Returns:
             Tuple of (applied: bool, pattern_cells: set of (x, y) coordinates).
         """
@@ -220,7 +254,12 @@ class MazeGenerator:
 
         return True, pattern_cells
 
-    def _set_fully_closed(self, grid: list[list[Cell]], x: int, y: int) -> None:
+    def _set_fully_closed(
+        self,
+        grid: list[list[Cell]],
+        x: int,
+        y: int,
+    ) -> None:
         """Turn a cell into fully closed and keep neighbor wall consistency."""
         grid[y][x].walls = 0b1111
 

@@ -20,11 +20,10 @@ class MazeConfig:
     output_file: str
     perfect: bool
     seed: int | None = None
-    display: str = "NONE"
 
 
 _REQUIRED_KEYS = {"WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"}
-_OPTIONAL_KEYS = {"SEED", "DISPLAY"}
+_OPTIONAL_KEYS = {"SEED"}
 
 
 def _parse_bool(value: str) -> bool:
@@ -46,12 +45,17 @@ def _parse_int(value: str, key: str) -> int:
 def _parse_coords(value: str, key: str) -> tuple[int, int]:
     parts = value.split(",")
     if len(parts) != 2:
-        raise ConfigError(f"Invalid coordinate format for {key}: {value!r}. Expected x,y")
+        msg = (
+            f"Invalid coordinate format for {key}: {value!r}. "
+            "Expected x,y"
+        )
+        raise ConfigError(msg)
     try:
         x = int(parts[0].strip())
         y = int(parts[1].strip())
     except ValueError as exc:
-        raise ConfigError(f"Invalid coordinate integers for {key}: {value!r}") from exc
+        msg = f"Invalid coordinate integers for {key}: {value!r}"
+        raise ConfigError(msg) from exc
     return (x, y)
 
 
@@ -64,10 +68,12 @@ def _read_raw_config(path: Path) -> Dict[str, str]:
                 if not stripped or stripped.startswith("#"):
                     continue
                 if "=" not in stripped:
-                    raise ConfigError(
-                        f"Invalid config syntax at line {line_no}: {stripped!r}. "
+                    msg = (
+                        f"Invalid config syntax at line {line_no}: "
+                        f"{stripped!r}. "
                         "Expected KEY=VALUE."
                     )
+                    raise ConfigError(msg)
                 key, value = stripped.split("=", 1)
                 key = key.strip().upper()
                 value = value.strip()
@@ -77,7 +83,8 @@ def _read_raw_config(path: Path) -> Dict[str, str]:
     except FileNotFoundError as exc:
         raise ConfigError(f"Configuration file not found: {path}") from exc
     except OSError as exc:
-        raise ConfigError(f"Could not read configuration file: {path}") from exc
+        msg = f"Could not read configuration file: {path}"
+        raise ConfigError(msg) from exc
     return raw
 
 
@@ -100,25 +107,30 @@ def load_config(path_str: str) -> MazeConfig:
     exit_ = _parse_coords(raw["EXIT"], "EXIT")
     output_file = raw["OUTPUT_FILE"].strip()
     perfect = _parse_bool(raw["PERFECT"])
-    seed = _parse_int(raw["SEED"], "SEED") if "SEED" in raw else None
-    display = raw.get("DISPLAY", "NONE").strip().upper()
-
+    seed = None
+    if "SEED" in raw:
+        seed = _parse_int(raw["SEED"], "SEED")
     if width <= 0 or height <= 0:
         raise ConfigError("WIDTH and HEIGHT must be positive integers.")
 
     if output_file == "":
         raise ConfigError("OUTPUT_FILE cannot be empty.")
 
-    if display not in {"NONE", "ASCII", "GUI"}:
-        raise ConfigError("DISPLAY must be either NONE, ASCII, or GUI.")
-
     ex, ey = entry
     xx, xy = exit_
 
     if not (0 <= ex < width and 0 <= ey < height):
-        raise ConfigError(f"ENTRY out of bounds: {entry} for WIDTH={width}, HEIGHT={height}")
+        msg = (
+            f"ENTRY out of bounds: {entry} for WIDTH={width}, "
+            f"HEIGHT={height}"
+        )
+        raise ConfigError(msg)
     if not (0 <= xx < width and 0 <= xy < height):
-        raise ConfigError(f"EXIT out of bounds: {exit_} for WIDTH={width}, HEIGHT={height}")
+        msg = (
+            f"EXIT out of bounds: {exit_} for WIDTH={width}, "
+            f"HEIGHT={height}"
+        )
+        raise ConfigError(msg)
     if entry == exit_:
         raise ConfigError("ENTRY and EXIT must be different.")
 
@@ -130,5 +142,4 @@ def load_config(path_str: str) -> MazeConfig:
         output_file=output_file,
         perfect=perfect,
         seed=seed,
-        display=display,
     )
